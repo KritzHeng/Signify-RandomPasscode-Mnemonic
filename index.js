@@ -1,6 +1,9 @@
 const bip39 = require('bip39');
 const sodium = require('libsodium-wrappers-sumo');
 const { randomPasscode } = require('signify-ts');
+const HDKey = require('hdkey');
+const Wallet = require('ethereumjs-wallet').default;
+
 
 (async () => {
   // Initialize libsodium
@@ -42,4 +45,17 @@ const { randomPasscode } = require('signify-ts');
 
   // Display the recovered passcode
   console.log('Recovered Passcode:', recoveredPasscode);
+
+  // Convert mnemonic to seed
+  const seed = await bip39.mnemonicToSeed(mnemonic);
+
+  // Derive private key from seed using hdkey
+  const root = HDKey.fromMasterSeed(seed);
+  const addrNode = root.derive("m/44'/60'/0'/0/0");
+  const privateKey = addrNode.privateKey;
+
+  // Derive Ethereum address from private key
+  const wallet = Wallet.fromPrivateKey(privateKey);
+  const address = wallet.getAddressString();
+  console.log('Ethereum Address:', address);
 })();
